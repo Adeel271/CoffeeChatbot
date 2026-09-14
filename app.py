@@ -4,6 +4,29 @@ from database import get_products
 
 st.set_page_config(page_title="One Stop Coffee")
 
+# Adding a red strip - ssplit background to make it more interactive using html / CSS
+
+st.html("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(
+        135deg,
+        #0D0D0D 0%,
+        #0D0D0D 38%,
+        #9B111E 38%,
+        #9B111E 62%,
+        #0D0D0D 62%,
+        #0D0D0D 100%
+    );
+    background-attachment: fixed;
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+</style>
+""")
+
 st.title("One Stop Coffee")
 st.write("Welcome to One Stop Coffee Shop -  Let's Get Your Day Started In Style :)")
 
