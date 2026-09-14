@@ -77,12 +77,10 @@ def get_products():
      connection.row_factory = sqlite3.Row
 
 
-     query = connection.execute(
-               "SELECT product_id, name, category, price_pence, "
-               "stock_quantity, description "
-               "FROM products"
-               "ORDER By product_id"
-          )
+     query = "SELECT product_id, name, category, price_pence, stock_quantity, description FROM products ORDER BY product_id"
+
+
+    
      try:
           products = connection.execute(query).fetchall()
           return products
