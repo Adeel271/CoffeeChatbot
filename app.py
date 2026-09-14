@@ -29,4 +29,4 @@ for product in products:
             "Description": product["description"],
         })
 
-    st.dataframe(menu_rows, hide_index=True)
+st.dataframe(menu_rows, hide_index=True)
