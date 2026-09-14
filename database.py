@@ -69,6 +69,29 @@ def initialise_database():
             connection.close()
 
 
+# Connecting the app to the database
+
+def get_products():
+
+     connection = sqlite3.connect(DATABASE_PATH)
+     connection.row_factory = sqlite3.Row
+
+
+     query = connection.execute(
+               "SELECT product_id, name, category, price_pence, "
+               "stock_quantity, description "
+               "FROM products"
+               "ORDER By product_id"
+          )
+     try:
+          products = connection.execute(query).fetchall()
+          return products
+     finally:
+          connection.close()
+
+              
+
+
 if __name__ == "__main__":
      initialise_database()
 
