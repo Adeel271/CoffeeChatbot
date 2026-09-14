@@ -24,7 +24,7 @@ for product in products:
     menu_rows.append({
             "Product": product["name"],
             "Category": product["category"],
-            "Price": f"£{product['price_pence'] / 100:.f}",
+            "Price": f"£{product['price_pence'] / 100:.2f}",
             "Availability": availability,
             "Description": product["description"],
         })
