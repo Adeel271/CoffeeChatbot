@@ -5,7 +5,7 @@ from database import get_products
 st.set_page_config(page_title="One Stop Coffee")
 
 st.title("One Stop Coffee")
-st.write("Welcome! I Am Your Digital Barista - Let's Get Your Day Started In Style :)")
+st.write("Welcome to One Stop Coffee Shop -  Let's Get Your Day Started In Style :)")
 
 
 st.subheader("Our Brew")
