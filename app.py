@@ -62,8 +62,7 @@ st.html("""
 
 products = get_products()
 
-
-left_space, menu_column, right_space = st.column([1, 8, 1])
+left_space, menu_column, right_space = st.columns([1, 8, 1])
 
 with menu_column:
     st.subheader("Menu")
@@ -72,7 +71,7 @@ with menu_column:
         st.info("We are sorry - Menu is empty :(")
 
     else:
-        categorise = ["All categories"] + sorted({
+        categories = ["All categories"] + sorted({
             product["category"] for product in products
         })
 
@@ -80,86 +79,67 @@ with menu_column:
             product["price_pence"] for product in products
         ) / 100
 
-
         category_column, budget_column = st.columns(2)
 
         with category_column:
-
             selected_category = st.selectbox(
-
                 "Choose a category",
-                options=categorise,
+                options=categories,
+            )
 
+        with budget_column:
+            maximum_price = st.number_input(
+                "Maximum price per item (£)",
+                min_value=0.0,
+                value=float(highest_price),
+                step=0.10,
+                format="%.2f",
+            )
+
+        available_only = st.checkbox(
+            "Show available items only",
+            value=False,
         )
 
-            with budget_column:
+        budget_pence = round(maximum_price * 100)
+        menu_rows = []
 
-                maximum_price = st.number_input(
-                    "Maximum price per item (£)" ,
-                    min_value=0.0,
-                    value=float(highest_price),
-                    step=0.10,
-                    format="%.2f",
+        for product in products:
+            if (
+                selected_category != "All categories"
+                and product["category"] != selected_category
+            ):
+                continue
 
-        )
+            if product["price_pence"] > budget_pence:
+                continue
 
-                available_only = st.checkbox (
-                    "Show available items only",
-                    value=False,
-        )
+            if available_only and product["stock_quantity"] <= 0:
+                continue
 
-                budget_pence = round(maximum_price * 100)
-                menu_rows = []
+            if product["stock_quantity"] > 0:
+                availability = "Available"
+            else:
+                availability = "Out of Stock"
 
-                for product in products:
+            menu_rows.append({
+                "Product": product["name"],
+                "Category": product["category"],
+                "Price": f"£{product['price_pence'] / 100:.2f}",
+                "Availability": availability,
+                "Description": product["description"],
+            })
 
-                    if (
-                    selected_category != "All categories"
-                    and product["category"] != selected_category
-                    ):
+        st.caption(f"{len(menu_rows)} matching products")
 
-                        continue
-
-                    if product["price_pence"] > budget_pence:
-                        continue
-
-                    if available_only and product["stock_quantity"] <= 0:
-                        continue
-
-                    if product["stock_quantity"] > 0:
-                        availability = "Available"
-
-                    else:
-
-                        availability  = "out of stock"
-
-                    menu_rows.append ({
-                        "Product": product["name"],
-                        "Category": product["category"],
-                        "Price": f"£{product['price_pence'] / 100:2f}",
-                        "Availability": availability,
-                        "Description": product["description"],
-
-                    })
-
-
-                    st.caption(f"{len(menu_rows)} matching products")
-
-
-                    if menu_rows:
-
-                        st.dataframe(
-                            menu_rows,
-                            hide_index=True,
-                            width="stretch",
-
-                        )
-
-                    else:
-
-                        st.info(
-
-                            "Oops - I couldn't find your brew :("
-                            "Please try another category or increase your budget"
-                        )
-
+        if menu_rows:
+            st.dataframe(
+                menu_rows,
+                hide_index=True,    
+                width="stretch",
+            )
+        else:
+            st.info(
+                "Oops - I couldn't find your brew :( "
+                "Please try another category or increase your budget."
+            )
