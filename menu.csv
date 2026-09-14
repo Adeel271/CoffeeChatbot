@@ -1,0 +1,13 @@
+product_id,name,category,price_pence,stock_quantity,description
+1,Espresso,Hot coffee,220,30,A single shot of black coffee
+2,Americano,Hot coffee,280,30,Espresso with hot water
+3,Latte,Hot coffee,350,25,Espresso with steamed dairy milk
+4,Cappuccino,Hot coffee,350,25,Espresso with steamed dairy milk and foam
+5,Oat Latte,Hot coffee,390,15,Espresso with oat drink
+6,Mocha,Hot coffee,400,20,Espresso with chocolate and dairy milk
+7,Iced Latte,Cold coffee,380,15,Espresso with cold dairy milk over ice
+8,English Breakfast Tea,Tea,230,30,Black tea served without milk
+9,Peppermint Tea,Tea,250,20,Caffeine-free peppermint infusion
+10,Hot Chocolate,Hot chocolate,340,20,Chocolate with steamed dairy milk
+11,Butter Croissant,Pastry,260,12,Plain butter croissant
+12,Blueberry Muffin,Pastry,290,0,Blueberry muffin
