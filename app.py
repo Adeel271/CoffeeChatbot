@@ -21,7 +21,7 @@ for product in products:
     else:
         availability = "Out of Stock"
 
-        menu_rows.append({
+    menu_rows.append({
             "Product": product["name"],
             "Category": product["category"],
             "Price": f"£{product['price_pence'] / 100:.2f}",
@@ -29,4 +29,4 @@ for product in products:
             "Description": product["description"],
         })
 
-        st.dataframe(menu_rows, hide_index=True)
+    st.dataframe(menu_rows, hide_index=True)
