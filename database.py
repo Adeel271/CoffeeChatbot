@@ -102,15 +102,15 @@ def update_product(product_id, price_pence, stock_quantity):
 
      try:
           with connection:
-               result = connection.execute(
-                    "UPDATE products"
-                    "SET price_penece = ?, stock_quantity = ?"
-                    "WHERE product_id = ?",
-                    (price_pence, stock_quantity, product_id),
-               )
-
-               if result.rowcount != 1:
-                    raise ValueError("Product not found")
+              
+                          result = connection.execute(
+                "UPDATE products SET price_pence = ?, stock_quantity = ? WHERE product_id = ?",
+                (price_pence, stock_quantity, product_id),
+            )
+                          
+                          if result.rowcount != 1:
+                              
+                              raise ValueError("Product not found")
      finally:
           connection.close()
               

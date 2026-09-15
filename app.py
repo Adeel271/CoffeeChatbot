@@ -1,18 +1,26 @@
 import base64
-import streamlit as st
-from database import get_products, update_product
-from pathlib import Path
 from html import escape
+from pathlib import Path
 
-st.set_page_config(page_title="One Stop Coffee")
+import streamlit as st
 
-# Adding a red strip - ssplit background to make it more interactive using html / CSS
+from database import get_products, update_product
 
-banner_path = Path(__file__).resolve().parent / "assets" / "coffee-banner.png"
-background_image = base64.b64encode(banner_path.read_bytes()).decode("utf-8")
 
-# Adding interactive background of the app
+st.set_page_config(
+    page_title="One Stop Coffee",
+    layout="wide",
+)
 
+# Locate the project folder and background image.
+BASE_DIR = Path(__file__).resolve().parent
+background_path = BASE_DIR / "assets" / "coffee-banner.png"
+
+background_image = base64.b64encode(
+    background_path.read_bytes()
+).decode("utf-8")
+
+# Apply the background and remove space around the banner.
 st.html(f"""
 <style>
 [data-testid="stAppViewContainer"] {{
@@ -32,6 +40,7 @@ st.html(f"""
 [data-testid="stHeader"] {{
     background: transparent;
 }}
+
 [data-testid="stMainBlockContainer"] {{
     max-width: 100%;
     padding-top: 0;
@@ -41,13 +50,15 @@ st.html(f"""
 </style>
 """)
 
-# Adding coffee banner to the welcome page
+# Display the full-width coffee banner.
+display_banner_path = BASE_DIR / "assets" / "coffee-banner-variety.png"
 
-display_banner_path = (
-    Path(__file__).resolve().parent / "assets" / "coffee-banner-variety.png"
+st.image(
+    str(display_banner_path),
+    width="stretch",
 )
-st.image(str(display_banner_path), width="stretch")
 
+# Display the centred heading and welcome message.
 st.html("""
 <div style="text-align: center; padding: 24px 16px;">
     <h1 style="color: white; margin: 0 0 12px 0;">
@@ -59,11 +70,10 @@ st.html("""
 </div>
 """)
 
-
-# Creating an interactive menu for user convinience
-
+# Read current product information from the database.
 products = get_products()
 
+# Keep the menu narrower than the banner.
 left_space, menu_column, right_space = st.columns([1, 8, 1])
 
 with menu_column:
@@ -73,11 +83,14 @@ with menu_column:
         st.info("We are sorry - Menu is empty :(")
 
     else:
-        categories = ["All categories"] + sorted(
-            {product["category"] for product in products}
-        )
+        # Build category options from the stored products.
+        categories = ["All categories"] + sorted({
+            product["category"] for product in products
+        })
 
-        highest_price = max(product["price_pence"] for product in products) / 100
+        highest_price = max(
+            product["price_pence"] for product in products
+        ) / 100
 
         category_column, budget_column = st.columns(2)
 
@@ -101,6 +114,7 @@ with menu_column:
             value=False,
         )
 
+        # Convert the selected budget to pence for comparison.
         budget_pence = round(maximum_price * 100)
         menu_rows = []
 
@@ -122,91 +136,148 @@ with menu_column:
             else:
                 availability = "Out of Stock"
 
-            menu_rows.append(
-                {
-                    "Product": product["name"],
-                    "Category": product["category"],
-                    "Price": f"£{product['price_pence'] / 100:.2f}",
-                    "Availability": availability,
-                    "Description": product["description"],
-                }
-            )
+            menu_rows.append({
+                "Product": product["name"],
+                "Category": product["category"],
+                "Price": f"£{product['price_pence'] / 100:.2f}",
+                "Availability": availability,
+                "Description": product["description"],
+            })
 
         st.caption(f"{len(menu_rows)} matching products")
 
+        # Display an HTML table without using PyArrow as PyArrow gets blocked by windows security settings.
         if menu_rows:
-            st.dataframe(
-                menu_rows,
-                hide_index=True,
-                width="stretch",
+            columns = [
+                "Product",
+                "Category",
+                "Price",
+                "Availability",
+                "Description",
+            ]
+
+            header_html = "".join(
+                f"<th>{escape(column)}</th>"
+                for column in columns
             )
+
+            rows_html = ""
+
+            for row in menu_rows:
+                cells_html = "".join(
+                    f"<td>{escape(str(row[column]))}</td>"
+                    for column in columns
+                )
+
+                rows_html += f"<tr>{cells_html}</tr>"
+
+            st.html(f"""
+                <style>
+                .coffee-menu {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: black;
+                    color: white;
+                }}
+
+                .coffee-menu th,
+                .coffee-menu td {{
+                    padding: 12px;
+                    border: 1px solid dimgray;
+                    text-align: left;
+                }}
+
+                .coffee-menu th {{
+                    background: darkslategray;
+                }}
+                </style>
+
+                <div style="overflow-x: auto;">
+                    <table class="coffee-menu">
+                        <thead>
+                            <tr>{header_html}</tr>
+                        </thead>
+                        <tbody>
+                            {rows_html}
+                        </tbody>
+                    </table>
+                </div>
+            """)
+
         else:
             st.info(
                 "Oops - I couldn't find your brew :( "
                 "Please try another category or increase your budget."
             )
 
-            # Adding filters to manage inventory
-
+# Update existing product prices and stock.
 with menu_column:
     st.divider()
 
     if "inventory_notice" in st.session_state:
-        st.success(st.session_state.pop("inventory_notice"))
+        st.success(
+            st.session_state.pop("inventory_notice")
+        )
 
-        with st.expander("Manage inventory"):
-            st.caption("Inventory Editor")
+    with st.expander("Manage inventory"):
+        st.caption("Local prototype inventory editor")
 
-            if products:
-                products_by_id = {
-                    product["product_id"]: product for products in product
-                }
+        if products:
+            products_by_id = {
+                product["product_id"]: product
+                for product in products
+            }
 
-                selected_id = st.selectbox(
-                    "Select a product to update",
-                    options=list(products_by_id),
-                    format_func=lambda product_id: (products_by_id[product_id]["name"]),
-                    key="inventory_product",
+            selected_id = st.selectbox(
+                "Select a product to update",
+                options=list(products_by_id),
+                format_func=lambda product_id: (
+                    products_by_id[product_id]["name"]
+                ),
+                key="inventory_product",
+            )
+
+            selected_product = products_by_id[selected_id]
+
+            # Submit both values together when Save changes is clicked.
+            with st.form(key=f"inventory_form_{selected_id}"):
+                new_price = st.number_input(
+                    "Product price (£)",
+                    min_value=0.0,
+                    value=float(
+                        selected_product["price_pence"] / 100
+                    ),
+                    step=0.10,
+                    format="%.2f",
+                    key=f"price_{selected_id}",
                 )
-
-                # This input in streamlit library will enable parameters to set the product price in correct format
-
-                selected_product = products_by_id[selected_id]
-
-                with st.form(key=f"inventory_form_{selected_id}"):
-                    new_price = st.number_input(
-                        "Product price (£)",
-                        main_value=0.0,
-                        value=float(selected_product["price_pence"] / 100),
-                        step=0.10,
-                        format="%.2f",
-                        key=f"price_{selected_id}",
-                    )
-
-                # These parameters will enable the app to add new products
 
                 new_stock = st.number_input(
                     "Stock quantity",
                     min_value=0,
-                    value=int(selected_product["stock_quantity"]),
+                    value=int(
+                        selected_product["stock_quantity"]
+                    ),
                     step=1,
                     key=f"stock_{selected_id}",
                 )
 
-                save_clicked = st.form_submit_button("Save changes")
+                save_clicked = st.form_submit_button(
+                    "Save changes"
+                )
 
-                if save_clicked:
-                    update_product(
-                        selected_id,
-                        round(new_price * 100),
-                        int(new_stock),
-                    )
+            if save_clicked:
+                update_product(
+                    selected_id,
+                    round(new_price * 100),
+                    int(new_stock),
+                )
 
-                    st.session_state["inventory_notice"] = (
-                        f"save changes for {selected_product["name"]}."
-                    )
+                st.session_state["inventory_notice"] = (
+                    f"Saved changes for {selected_product['name']}."
+                )
 
-                    st.rerun()
+                st.rerun()
 
-                else:
-                    st.info("No products to update")
+        else:
+            st.info("There are no products to update.")

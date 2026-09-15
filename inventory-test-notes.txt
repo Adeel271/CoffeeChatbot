@@ -1,0 +1,7 @@
+Inventory tests
+
+Stock update through Save changes: PASS
+Menu availability updates after saving: PASS
+Stock remains saved after browser refresh: PASS
+Price update appears in the menu: PASS
+Blueberry Muffin restored to £2.90 and stock 0: PASS
