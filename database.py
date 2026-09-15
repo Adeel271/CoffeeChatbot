@@ -87,6 +87,32 @@ def get_products():
      finally:
           connection.close()
 
+# Adding inventory management
+
+def update_product(product_id, price_pence, stock_quantity):
+
+     if type(price_pence) is not int or price_pence < 0:
+          raise ValueError("Please enter a valid non-negative price")
+
+     if type(stock_quantity) is not int or stock_quantity < 0:
+          raise ValueError("Invalid entry - Please enter a valid number of stock")
+
+     connection = sqlite3.connect(DATABASE_PATH)
+
+
+     try:
+          with connection:
+               result = connection.execute(
+                    "UPDATE products"
+                    "SET price_penece = ?, stock_quantity = ?"
+                    "WHERE product_id = ?",
+                    (price_pence, stock_quantity, product_id),
+               )
+
+               if result.rowcount != 1:
+                    raise ValueError("Product not found")
+     finally:
+          connection.close()
               
 
 
