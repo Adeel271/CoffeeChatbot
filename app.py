@@ -1,6 +1,7 @@
 import base64
 from html import escape
 from pathlib import Path
+from ordering import render_ordering
 
 import streamlit as st
 
@@ -209,72 +210,103 @@ with menu_column:
                 "Oops - I couldn't find your brew :( "
                 "Please try another category or increase your budget."
             )
+            
+with menu_column:
+    render_ordering()
+
 
 # Update existing product prices and stock.
+
 with menu_column:
     st.divider()
 
     if "inventory_notice" in st.session_state:
-        st.success(
-            st.session_state.pop("inventory_notice")
-        )
+        st.success(st.session_state.pop("inventory_notice"))
 
     with st.expander("Manage inventory"):
         st.caption("Local prototype inventory editor")
 
-        if products:
-            products_by_id = {
-                product["product_id"]: product
-                for product in products
-            }
+        # Read the latest saved values.
+        inventory_products = get_products()
 
-            selected_id = st.selectbox(
-                "Select a product to update",
-                options=list(products_by_id),
-                format_func=lambda product_id: (
-                    products_by_id[product_id]["name"]
-                ),
-                key="inventory_product",
+        if inventory_products:
+            inventory_by_id = {
+                product["product_id"]: product
+                for product in inventory_products
+            }
+            
+            inventory_options = {
+                f"{product['product_id']} — {product['name']}":
+                product["product_id"]
+                for product in inventory_products
+            }
+            
+            with st.form("inventory_product_loader"):
+                selected_inventory_label = st.selectbox(
+                    "Select a product to update",
+                    options=list(inventory_options),
+                    key="inventory_load_selection",
+                )
+
+                load_clicked = st.form_submit_button("Load product")
+
+            if load_clicked:
+                st.session_state["loaded_inventory_id"] = (
+                    inventory_options[selected_inventory_label]
+                )
+
+            inventory_id = st.session_state.get("loaded_inventory_id")
+
+            if inventory_id not in inventory_by_id:
+                st.info("Choose a product and click Load product.")
+                st.stop()
+
+            inventory_product = inventory_by_id[inventory_id]
+
+            saved_price = int(inventory_product["price_pence"])
+            saved_stock = int(inventory_product["stock_quantity"])
+
+            st.caption(
+                f"Saved in database: "
+                f"{inventory_product['name']} — "
+                f"£{saved_price / 100:.2f} — "
+                f"Stock: {saved_stock}"
             )
 
-            selected_product = products_by_id[selected_id]
+            record_key = (
+                f"inventory_v2_{inventory_id}_"
+                f"{saved_price}_{saved_stock}"
+            )
 
-            # Submit both values together when Save changes is clicked.
-            with st.form(key=f"inventory_form_{selected_id}"):
+            with st.form(key=f"form_{record_key}"):
                 new_price = st.number_input(
                     "Product price (£)",
                     min_value=0.0,
-                    value=float(
-                        selected_product["price_pence"] / 100
-                    ),
+                    value=float(saved_price / 100),
                     step=0.10,
                     format="%.2f",
-                    key=f"price_{selected_id}",
+                    key=f"price_{record_key}",
                 )
 
                 new_stock = st.number_input(
                     "Stock quantity",
                     min_value=0,
-                    value=int(
-                        selected_product["stock_quantity"]
-                    ),
+                    value=saved_stock,
                     step=1,
-                    key=f"stock_{selected_id}",
+                    key=f"stock_{record_key}",
                 )
 
-                save_clicked = st.form_submit_button(
-                    "Save changes"
-                )
+                save_clicked = st.form_submit_button("Save changes")
 
             if save_clicked:
                 update_product(
-                    selected_id,
+                    inventory_id,
                     round(new_price * 100),
                     int(new_stock),
                 )
 
                 st.session_state["inventory_notice"] = (
-                    f"Saved changes for {selected_product['name']}."
+                    f"Saved changes for {inventory_product['name']}."
                 )
 
                 st.rerun()
