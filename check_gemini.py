@@ -17,7 +17,7 @@ try:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=(
                 "You are the digital barista for One Stop Coffee. "
                 "Write one short sentence welcoming a customer. "
