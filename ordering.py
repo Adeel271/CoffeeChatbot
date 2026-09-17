@@ -51,10 +51,9 @@ def render_ordering():
         confirmation = st.session_state["order_confirmation"]
 
         st.success(
-            " Payment Successful - "
-            f"Order Number  #{confirmation['order_id']} -  "
-            f"Total: £{confirmation['total_pence'] / 100:.2f} "
-            
+            f"Order #{confirmation['order_id']} placed successfully. "
+            f"Total: £{confirmation['total_pence'] / 100:.2f}. "
+            "Simulated payment completed — no money was charged."
         )
 
     if available_ids:
@@ -190,8 +189,7 @@ def render_ordering():
         st.rerun()
 
     st.info(
-        "Order Placed "
-        "Payment Successful-"
+        "Review your basket, then click Place order to confirm your order. "
     )
 
     if st.button(
