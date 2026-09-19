@@ -1,13 +1,78 @@
+import hmac
+
 import streamlit as st
 
 from database import get_products, update_product
+
+# Prompt for the administrator password to manage inventory. The password is stored in Streamlit secrets.
+
+def check_inventory_password():
+    entered_password = st.session_state.pop(
+        "inventory_password_input", ""
+    )
+    saved_password = st.secrets["INVENTORY_PASSWORD"]
+
+    password_matches = hmac.compare_digest(
+        entered_password.encode("utf-8"),
+        saved_password.encode("utf-8"),
+    )
+    
+    # Setting validation parameters in session state to control access to inventory management.
+
+    st.session_state["inventory_authenticated"] = password_matches
+    st.session_state["inventory_login_failed"] = not password_matches
+    
+    # Validation parameters cleared - if fail restrict access. 
+
+
+def logout_inventory():
+    for key in (
+        "inventory_authenticated",
+        "inventory_login_failed",
+        "inventory_password_input",
+        "loaded_inventory_id",
+        "inventory_notice",
+    ):
+        st.session_state.pop(key, None)
 
 
 left_space, menu_column, right_space = st.columns([1, 8, 1])
 
 with menu_column:
-    st.title("Manage Invetory")
-    
+    st.title("Manage Inventory")
+
+    try:
+        configured_password = st.secrets["INVENTORY_PASSWORD"]
+    except (KeyError, FileNotFoundError):
+        st.error("Inventory access has not been configured.")
+        st.stop()
+
+    if not isinstance(configured_password, str) or not configured_password:
+        st.error("The inventory password must be a non-empty string.")
+        st.stop()
+
+    if not st.session_state.get("inventory_authenticated", False):
+        st.info("Enter the administrator password to manage inventory.")
+
+        with st.form("inventory_login_form"):
+            st.text_input(
+                "Administrator password",
+                type="password",
+                key="inventory_password_input",
+            )
+
+            st.form_submit_button(
+                "Log in",
+                on_click=check_inventory_password,
+            )
+
+        if st.session_state.get("inventory_login_failed", False):
+            st.error("Incorrect password. Please try again.")
+
+        st.stop()
+
+    st.button("Log out", on_click=logout_inventory)
+
     
     # Update existing product prices and stock.
 
