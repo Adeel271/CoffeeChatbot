@@ -138,6 +138,8 @@ with menu_column:
                 f"inventory_v2_{inventory_id}_"
                 f"{saved_price}_{saved_stock}"
             )
+            
+            # Parameters to modify inventory product price and stock quantity.
 
             with st.form(key=f"form_{record_key}"):
                 new_price = st.number_input(
