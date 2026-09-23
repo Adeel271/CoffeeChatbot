@@ -10,9 +10,13 @@ from database import get_products
 
 
 def get_barista_reply(messages):
+    
     # Read current prices and stock for every question.
+    
     products = [dict(product) for product in get_products()]
     menu_data = json.dumps(products, ensure_ascii=False)
+    
+    # Instructions for the AI barista (Run By Gemini) to provide helpful and accurate responses to customer queries.
 
     instructions = """
 You are the digital barista for One Stop Coffee.
@@ -70,6 +74,10 @@ Current menu data:
         )
         for message in messages
     ]
+    
+    # Use the Gemini API to generate a response based on the conversation and instructions.
+    # The API key is retrieved from Streamlit secrets, the Gemini model used is 3.6 falsh 
+    
 
     with genai.Client(
         api_key=st.secrets["GEMINI_API_KEY"],
@@ -81,6 +89,9 @@ Current menu data:
                         config=types.GenerateContentConfig(
                 system_instruction=instructions,
                 tools=[
+                    
+# Integration with the basket tool is provided to allow the AI barista to add items to the basket or clear it based on customer requests.
+                    
                     types.Tool(
                             function_declarations=[
                             types.FunctionDeclaration(**BASKET_TOOL),
@@ -95,6 +106,7 @@ Current menu data:
         )
 
         # Handle basket actions before checking for a text reply.
+        
     if response.function_calls:
         return apply_basket_calls(response.function_calls)
 
