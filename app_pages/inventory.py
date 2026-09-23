@@ -44,19 +44,21 @@ with menu_column:
     try:
         configured_password = st.secrets["INVENTORY_PASSWORD"]
     except (KeyError, FileNotFoundError):
-        st.error("Inventory access has not been configured.")
+        st.error("Failed inventory configuration.")
         st.stop()
 
     if not isinstance(configured_password, str) or not configured_password:
-        st.error("The inventory password must be a non-empty string.")
+        st.error("The inventory password cannot be empty.")
         st.stop()
+        
+        # Prompt for the administrator password to manage inventory. The password is stored in Streamlit secrets.
 
     if not st.session_state.get("inventory_authenticated", False):
-        st.info("Enter the administrator password to manage inventory.")
+        st.info("Administrator access required.")
 
         with st.form("inventory_login_form"):
             st.text_input(
-                "Administrator password",
+                " Enter administrator password",
                 type="password",
                 key="inventory_password_input",
             )
@@ -67,7 +69,7 @@ with menu_column:
             )
 
         if st.session_state.get("inventory_login_failed", False):
-            st.error("Incorrect password. Please try again.")
+            st.error("Access denied - Please enter correct password or contact the administrator.")
 
         st.stop()
 
@@ -83,7 +85,7 @@ with menu_column:
         st.success(st.session_state.pop("inventory_notice"))
 
     with st.expander("Manage inventory"):
-        st.caption("Local prototype inventory editor")
+        st.caption("Local product inventory editor")
 
         # Read the latest saved values.
         inventory_products = get_products()
@@ -117,7 +119,7 @@ with menu_column:
             inventory_id = st.session_state.get("loaded_inventory_id")
 
             if inventory_id not in inventory_by_id:
-                st.info("Choose a product and click Load product.")
+                st.info("Select Product & Press Load Product.")
                 st.stop()
 
             inventory_product = inventory_by_id[inventory_id]

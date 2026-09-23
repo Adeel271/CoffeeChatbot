@@ -32,7 +32,7 @@ with menu_column:
 
         with category_column:
             selected_category = st.selectbox(
-                "Choose a category",
+                "Select a category",
                 options=categories,
             )
 
@@ -53,6 +53,8 @@ with menu_column:
         # Convert the selected budget to pence for comparison.
         budget_pence = round(maximum_price * 100)
         menu_rows = []
+        
+        # For each product, check if it matches the selected category, budget, and availability.
 
         for product in products:
             if (
@@ -104,6 +106,8 @@ with menu_column:
                     f"<td>{escape(str(row[column]))}</td>"
                     for column in columns
                 )
+                
+                # CSS styling for the table is applied to make it visually appealing and readable, with a black background and white text. 
 
                 rows_html += f"<tr>{cells_html}</tr>"
 
@@ -139,6 +143,8 @@ with menu_column:
                     </table>
                 </div>
             """)
+            
+            # If no matching products are found, display an informational message.
 
         else:
             st.info(
