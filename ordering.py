@@ -35,6 +35,8 @@ def render_ordering():
         for product in products
         if product["stock_quantity"] > 0
     ]
+    
+    # Render the ordering interface, allowing users to select products, manage their basket, and place orders.
 
     st.divider()
     st.subheader("Place an order")
@@ -80,6 +82,9 @@ def render_ordering():
                 value=1,
                 step=1,
             )
+            
+            # Add the selected product and quantity to the user's basket.
+            # ensuring that stock levels and pricing are validated before confirming the addition.
 
             add_clicked = st.form_submit_button("Add to basket")
 
@@ -191,6 +196,8 @@ def render_ordering():
     st.info(
         "Review your basket, then click Place order to confirm your order. "
     )
+    
+    # Confirm the order placement, ensuring that stock levels and pricing are validated before finalizing the order.
 
     if st.button(
         "Place Order",

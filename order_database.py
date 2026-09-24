@@ -2,6 +2,8 @@ import sqlite3
 
 from database import DATABASE_PATH
 
+# Initialize the orders database and provide functions to place orders. Connect SQLite.
+
 
 def initialise_orders():
     connection = sqlite3.connect(DATABASE_PATH)
@@ -31,6 +33,8 @@ def initialise_orders():
 
     finally:
         connection.close()
+        
+        # Setting up the database tables for orders and order items, ensuring that they exist before any operations are performed.
 
 
 def place_order(basket, checkout_key):
